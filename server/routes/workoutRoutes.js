@@ -137,6 +137,35 @@ router.post("/", async (req, res) => {
   }
 });
 
+
+//get details for a particular userid
+
+router.get('/user/:userId', async (req, res) => {
+  try {
+      const userId = req.params.userId; // ✅ Properly access userId
+
+      console.log("🔍 Fetching workouts for userId:", userId);
+
+      if (!userId) {
+          return res.status(400).json({ message: "User ID is required" });
+      }
+
+      const workouts = await Workout.find({ userId });
+      {/*const workouts = await Workout.find({ userId: req.params.userId }).sort({ date: -1 });*/}
+
+      if (!workouts.length) {
+          return res.status(404).json({ message: "No workouts found for this user" });
+      }
+
+      res.status(200).json(workouts);
+  } catch (error) {
+      console.error("❌ Error fetching workouts:", error);
+      res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+
+
 module.exports = router;
 
 

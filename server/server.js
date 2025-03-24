@@ -30,6 +30,10 @@ app.use("/api/motivation", motivationRoutes);
 const dailySummaryRoutes = require("./routes/dailySummary");
 app.use("/api/daily-summary", dailySummaryRoutes);
 
+const tipsroutes= require("./routes/tips")
+console.log("Tips  Route Loaded"); // ✅ Check if this prints
+app.use("/api/tips", require("./routes/tips"));
+
 
 
 const mealRoutes = require("./routes/meals");

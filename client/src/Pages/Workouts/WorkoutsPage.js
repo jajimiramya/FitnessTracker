@@ -15,6 +15,8 @@ const WorkoutsPage = () => {
     }
   };
 
+  
+
   useEffect(() => {
     fetchWorkouts();
   }, []);
@@ -43,7 +45,7 @@ const WorkoutsPage = () => {
       {/* Workouts List */}
       <div className="bg-white shadow-md rounded-lg p-4">
         <h2 className="text-xl font-bold mb-3">Workout History</h2>
-        <ul>
+        {/*<ul>
           {filteredWorkouts.length > 0 ? (
             filteredWorkouts.map((workout) => (
               <li key={workout._id} className="p-2 border-b">
@@ -54,10 +56,59 @@ const WorkoutsPage = () => {
           ) : (
             <p className="text-gray-500">No workouts found</p>
           )}
-        </ul>
+        </ul>*/}
+
+
+        {filteredWorkouts.length > 0 ? (
+
+          <table className="w-full border-collapse border border-gray-300">
+
+            <thead>
+
+              <tr className="bg-gray-200">
+
+                <th className="border border-gray-300 p-2">Workout Type</th>
+
+                <th className="border border-gray-300 p-2">Duration (mins)</th>
+
+                <th className="border border-gray-300 p-2">Intensity</th>
+
+                <th className="border border-gray-300 p-2">Date</th>
+
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              {filteredWorkouts.map((workout) => (
+
+                <tr key={workout._id} className="text-center border border-gray-300">
+
+                  <td className="border border-gray-300 p-2">{workout.type}</td>
+
+                  <td className="border border-gray-300 p-2">{workout.duration}</td>
+
+                  <td className="border border-gray-300 p-2">{workout.intensity}</td>
+
+                  <td className="border border-gray-300 p-2">{new Date(workout.date).toDateString()}</td>
+
+                </tr>
+
+              ))}
+
+            </tbody>
+
+          </table>
+
+        ) : (
+
+          <p className="text-gray-500">No workouts found</p>
+
+        )}
       </div>
     </div>
   );
 };
 
-export default WorkoutsPage;
+export default WorkoutsPage; 

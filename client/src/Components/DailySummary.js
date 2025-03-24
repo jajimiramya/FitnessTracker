@@ -29,16 +29,28 @@ const DailySummary = ({ userId }) => {
           setSummary(prev => ({ ...prev, caloriesConsumed: totalCalories }));
         }
 
-        // ✅ Fetch Calories Burned from /api/daily-goals/today
-        const goalsRes = await fetch("http://localhost:8082/api/daily-goals/today", {
+        // ✅ Fetch Calories Burned from Daily Goals API
+        const goalsRes = await fetch(`http://localhost:8082/api/daily-goals/${userId}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
-        const goalsData = await goalsRes.json();
-        if (goalsData.length > 0) {
-          setSummary(prev => ({ ...prev, caloriesBurned: goalsData[0].calories }));
+
+        if (!goalsRes.ok) {
+          throw new Error(`Error fetching daily goals: ${goalsRes.statusText}`);
         }
+
+        const goalsData = await goalsRes.json();
+        console.log("🔥 Daily Goals API Response:", goalsData);
+
+        // ✅ Fix: Extract `calories` from `goal`
+        if (goalsData && goalsData.goal && goalsData.goal.calories) {
+          console.log("🔥 Updating Calories Burned:", goalsData.goal.calories);
+          setSummary(prev => ({ ...prev, caloriesBurned: goalsData.goal.calories }));
+        } else {
+          console.warn("⚠️ No calories data found in the response");
+        }
+
       } catch (err) {
-        console.error("Error fetching daily summary data:", err);
+        console.error("❌ Error fetching daily summary data:", err);
       }
       setLoading(false);
     };

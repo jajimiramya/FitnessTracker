@@ -15,6 +15,7 @@ export const fetchWorkouts = async () => {
 export const addWorkout = async (payload) => {
   try {
     const userId = localStorage.getItem("userId");
+    console.log("Retrieved User ID:", userId);
 
     if (!userId) {
       console.error("User ID not found in local storage!");
@@ -26,6 +27,8 @@ export const addWorkout = async (payload) => {
     const workoutData = { ...payload, userId };
 
     console.log("Workout Data Sent:", workoutData); // Debugging step
+   
+
 
     const response = await axiosInstance.post("api/workouts", workoutData);
     return response.data;
@@ -58,3 +61,4 @@ export const updateWorkout = async (id, updatedData) => {
     return null;
   }
 };
+

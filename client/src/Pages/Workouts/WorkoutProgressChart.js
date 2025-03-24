@@ -8,7 +8,14 @@ const WorkoutProgressChart = () => {
   useEffect(() => {
     const fetchWorkoutData = async () => {
         try {
-          const response = await axiosInstance.get("/api/workouts");
+          const userId = localStorage.getItem("userId"); // Retrieve user ID from localStorage
+  
+          if (!userId) {
+            console.error("User ID not found!");
+            return;
+          }
+          const response = await axiosInstance.get(`/api/workouts/user/${userId}`); // Fetch only the logged-in user's workouts
+          //const response = await axiosInstance.get("/api/workouts");
           const workouts = response.data
             .map((workout) => ({
               date: new Date(workout.date).toLocaleDateString(),

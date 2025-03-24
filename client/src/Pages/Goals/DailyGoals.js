@@ -1,13 +1,10 @@
 import { useState, useEffect } from "react";
 import { saveDailyGoals, fetchDailyGoals } from "../../apicalls/dailygoals";
 
-
-const userId = localStorage.getItem("userId");
 const userToken = localStorage.getItem("token");
 
 const DailyGoals = () => {
   const [goals, setGoals] = useState({
-    userId: userId,
     steps: "",
     calories: "",
     water: "",
@@ -17,32 +14,26 @@ const DailyGoals = () => {
 
   useEffect(() => {
     const loadGoals = async () => {
-      console.log("useEffect triggered - Fetching daily goals");
+      console.log("🔍 Fetching daily goals...");
       const data = await fetchDailyGoals(userToken);
+
       if (data && !data.error) {
-        setGoals(data);
-      }
-      else {
-        console.error("Error loading goals:", data.error);
+        // Ensure we get the correct data structure (handle array response)
+        const goalData = Array.isArray(data) && data.length > 0 ? data[0] : data;
+
+        setGoals({
+          steps: goalData.steps || "",
+          calories: goalData.calories || "",
+          water: goalData.water || "",
+          workoutDuration: goalData.workoutDuration || "",
+        });
+      } else {
+        console.error("⚠️ Error loading goals:", data.error);
       }
     };
+
     loadGoals();
   }, []);
-  /*useEffect(() => {
-    const loadGoals = async () => {
-      const userId = localStorage.getItem("userId");
-      const userToken = localStorage.getItem("token");
-  
-      if (userId) {
-        const data = await fetchDailyGoals(userId, userToken);
-        if (data && !data.error) {
-          setGoals(data);
-        }
-      }
-    };
-    loadGoals();
-  }, []);*/
-  
 
   const handleChange = (e) => {
     setGoals({ ...goals, [e.target.name]: e.target.value });
@@ -51,10 +42,11 @@ const DailyGoals = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const data = await saveDailyGoals(goals, userToken);
+
     if (data.error) {
-      setMessage(data.error);
+      setMessage(`❌ ${data.error}`);
     } else {
-      setMessage("Daily goals saved successfully!");
+      setMessage("✅ Daily goals saved successfully!");
     }
   };
 
@@ -115,6 +107,5 @@ const DailyGoals = () => {
     </div>
   );
 };
-
 
 export default DailyGoals;

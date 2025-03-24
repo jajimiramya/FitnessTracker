@@ -10,11 +10,14 @@ const HistoricalGoals = () => {
             headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
         })
         .then((res) => res.json())
-        .then((data) => setHistory(data.data))
-        .catch((err) => console.error("Error fetching history:", err));
+        .then((data) => setHistory(data.data || [])) // Ensure history is always an array
+        .catch((err) => {
+            console.error("Error fetching history:", err);
+            setHistory([]); // Set empty array in case of error
+        });
     }, []);
 
-    if (!history.length) return <p>Loading historical data...</p>;
+    if (!history || history.length === 0) return <p>No historical data available.</p>;
 
     // Prepare data for chart
     const labels = history.map((goal) => new Date(goal.date).toLocaleDateString());

@@ -3,68 +3,58 @@ const DailyGoal = require("../models/dailyGoalModel");
 const authMiddleware = require("../middlewares/authMiddleware");
 
 // Create or Update Daily Goal
-router.post("/", authMiddleware, async (req, res) => {
-  try {
-    const { userId, steps = 0, calories = 0, water = 0, workoutDuration = 0 } = req.body;
-    const date = new Date().setHours(0, 0, 0, 0); // Normalize date to store only YYYY-MM-DD
-
-    if (!userId) {
-      return res.status(400).json({ error: "User ID is required" });
+// ✅ Save Daily Goals
+router.post("/", async (req, res) => {
+    try {
+      const { userId, steps, calories, water, workoutDuration } = req.body;
+  
+      // Get today's date in UTC (YYYY-MM-DD format)
+      const todayUTC = new Date();
+      todayUTC.setUTCHours(0, 0, 0, 0);
+  
+      console.log("📝 Saving goal for:", { userId, todayUTC });
+  
+      // Find and update or insert a new goal
+      const updatedGoal = await DailyGoal.findOneAndUpdate(
+        { userId: userId, date: todayUTC }, // Search criteria
+        { steps, calories, water, workoutDuration, date: todayUTC }, // Update data
+        { upsert: true, new: true } // Insert if not found, return new doc
+      );
+  
+      res.status(200).json({ success: true, message: "Daily goal saved successfully", goal: updatedGoal });
+    } catch (error) {
+      console.error("❌ Error saving daily goal:", error);
+      res.status(500).json({ success: false, message: "Server error" });
     }
+  });
+  
 
-    // Find existing record and update or create new one
-    const dailyGoal = await DailyGoal.findOneAndUpdate(
-      { userId, date }, // Search by userId and date
-      { $set: { steps, calories, water: parseFloat(water), workoutDuration } }, // Update fields
-      { new: true, upsert: true } // Return updated document or create if not found
-    );
 
-    res.status(201).json({ message: "Daily goal saved!", dailyGoal });
-  } catch (error) {
-    console.error("Error saving daily goal:", error);
-    res.status(500).json({ error: "Server error" });
-  }
-});
 
-router.get("/today", authMiddleware, async (req, res) => {
-  console.log("✅ Inside GET /today route");
-  console.log("✅ Checking req.user:", req.user);
-
-  if (!req.user || !req.user.userId) {
-      console.log("❌ No user ID found!");
-      return res.status(400).json({ error: "User ID is required" });
-  }
-
-  try {
-      const startOfDay = new Date();
-      startOfDay.setHours(0, 0, 0, 0);
-      const endOfDay = new Date();
-      endOfDay.setHours(23, 59, 59, 999);
-
-      console.log("🔍 Querying database for:", req.user.userId, startOfDay, endOfDay);
-
-      const dailyGoals = await DailyGoal.find({
-          userId: req.user.userId,
-          date: { $gte: startOfDay, $lte: endOfDay }
-      });
-
-      console.log("✅ Found Daily Goals:", dailyGoals);
-
-      if (!dailyGoals || dailyGoals.length === 0) {
-          return res.status(404).json({ message: "No daily goals found for today." });
+// ✅ Get Today's Goal for a User
+router.get("/:userId", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+  
+      // Get today's date at UTC 00:00:00
+      const todayUTC = new Date();
+      todayUTC.setUTCHours(0, 0, 0, 0);
+  
+      console.log("🔍 Searching for goals:", { userId, todayUTC });
+  
+      // Find today's goal for this user
+      const goal = await DailyGoal.findOne({ userId, date: todayUTC });
+  
+      if (!goal) {
+        return res.status(404).json({ success: false, message: "No goals found for today." });
       }
-
-      // Explicitly set response content type
-      res.setHeader("Content-Type", "application/json");
-
-      return res.status(200).json(dailyGoals);
-
-  } catch (error) {
-      console.log("❌ Error fetching daily goals:", error.message);
-      return res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
+  
+      res.status(200).json({ success: true, goal });
+    } catch (error) {
+      console.error("❌ Error fetching daily goals:", error);
+      res.status(500).json({ success: false, message: "Server error" });
+    }
+  });
 
 
 //GET /api/daily-goals/:date - Fetch goals for a specific date
